@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.spring.mapper.EmpMapper">
+    <parameterMap type="java.util.HashMap" id="hashmap"></parameterMap>
+	<select id="totalCount" parameterMap="hashmap" resultType="int">
+		select count(*)
+		from example1
+		<where>
+			<if test="searchtxt!=null and searchtxt!=''">
+				<choose>
+					<when test="search=='empno'">
+						and empno=#{searchtxt}
+					</when>
+					<when test="search=='ename'">
+						and ename like '%'||upper(#{searchtxt})||'%'
+					</when>
+					<when test="search=='job'">
+						and job=#{searchtxt}
+					</when>
+				</choose>
+			</if>
+		</where>
+	</select>
+	
+	<select id="emplist" parameterMap="hashmap" resultType="com.spring.domain.EmpDTO">
+		select *
+		from ( select /*+ index_desc(e PK_EMP) */  empno, ename, job, hiredate, rownum as rnum from example1 e
+			<where>
+				<if test="searchtx!=null and searchtxt!=''">
+					<choose>
+						<when test="search=='empno'">
+							and empno=#{searchtxt}
+						</when>
+						<when test="search=='ename'">
+							and ename like upper('%'||#{searchtxt}||'%')
+						</when>
+						<when test="search=='job'">
+							and job=#{searchtxt}
+						</when>
+					</choose>
+				</if>
+				<![CDATA[ and rownum<=#{endRow}]]>
+			</where>
+		)
+		<where>rnum>=#{startRow}</where>
+	</select>
+    
+    <select id="empinfo" parameterType="int" resultType="com.spring.domain.EmpDTO">
+    	select empno, ename, job, hiredate
+    	from example1
+    	where empno=#{empno}
+    </select>
+    
+</mapper>
